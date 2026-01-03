@@ -6,7 +6,7 @@ import { User } from "../models/user.models.js";
 import { Project } from "../models/project.models.js";
 import { ProjectMember } from "../models/projectmember.models.js";
 import { Task } from "../models/task.models.js";
-import { SubTask } from "../models/subtask.models.js";
+import { SubTask } from "../models/subTask.models.js";
 import { ProjectNote } from "../models/note.models.js";
 import { AvailableUserRoles, UserRolesEnum } from "../utils/constants.js";
 
@@ -895,7 +895,10 @@ const updateMemberRole = asyncHandler(async (req, res) => {
     }
 
     // If promoting to project_admin, check if project already has one
-    if (role === UserRolesEnum.PROJECT_ADMIN && targetMembership.role !== UserRolesEnum.PROJECT_ADMIN) {
+    if (
+        role === UserRolesEnum.PROJECT_ADMIN &&
+        targetMembership.role !== UserRolesEnum.PROJECT_ADMIN
+    ) {
         const existingAdmin = await ProjectMember.findOne({
             project: projectId,
             role: UserRolesEnum.PROJECT_ADMIN,
