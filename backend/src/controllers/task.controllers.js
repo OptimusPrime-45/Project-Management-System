@@ -7,7 +7,7 @@ import { ProjectMember } from "../models/projectmember.models.js";
 import { UserRolesEnum } from "../utils/constants.js";
 import { TaskStatusEnum } from "../utils/constants.js";
 import { Task } from "../models/task.models.js";
-import { SubTask } from "../models/subtask.models.js";
+import { SubTask } from "../models/subTask.models.js";
 import { createNotification } from "./notification.controllers.js";
 
 const getAllTasks = asyncHandler(async (req, res) => {
