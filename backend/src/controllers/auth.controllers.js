@@ -37,7 +37,7 @@ const registerUser = asyncHandler(async (req, res) => {
     // send verification email
     // send success response
 
-    const { email, username, password, role } = req.body;
+    const { email, username, password, role, isSuperAdmin } = req.body;
 
     const existedUser = await User.findOne({
         $or: [{ email }, { username }],
@@ -51,11 +51,15 @@ const registerUser = asyncHandler(async (req, res) => {
         );
     }
 
+    // Auto-verify email for super admins if requested
+    const isEmailVerified = isSuperAdmin === true;
+
     const user = await User.create({
         email,
         password,
         username,
-        isEmailVerified: false,
+        isEmailVerified,
+        isSuperAdmin: isSuperAdmin === true
     });
 
     const { unHashedToken, hashedToken, tokenExpiry } =

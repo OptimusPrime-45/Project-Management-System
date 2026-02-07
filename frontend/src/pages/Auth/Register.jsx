@@ -7,6 +7,7 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { register as registerAPI } from "../../api/auth";
 
@@ -25,6 +26,7 @@ const Register = () => {
   const [error, setError] = useState("");
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   // Calculate password strength
   useEffect(() => {
@@ -85,11 +87,17 @@ const Register = () => {
     setError("");
 
     try {
-      const { data } = await registerAPI({
+      const payload = {
         username: formData.username,
         email: formData.email,
         password: formData.password,
-      });
+      };
+
+      if (isSuperAdmin) {
+        payload.isSuperAdmin = true;
+      }
+
+      const { data } = await registerAPI(payload);
 
       setIsSuccess(true);
       setTimeout(() => {
@@ -267,6 +275,22 @@ const Register = () => {
                 onChange={handleChange}
               />
             </div>
+
+            {/* Super Admin Registration Toggle */}
+            <div className="flex items-center gap-2 py-2">
+              <input
+                type="checkbox"
+                id="isSuperAdmin"
+                checked={isSuperAdmin}
+                onChange={(e) => setIsSuperAdmin(e.target.checked)}
+                className="h-4 w-4 text-primary focus:ring-ring border-border rounded bg-input transition-colors"
+              />
+              <label htmlFor="isSuperAdmin" className="text-sm font-medium text-foreground">
+                Register as Super Admin
+              </label>
+            </div>
+
+
           </div>
 
           {/* Terms and Conditions */}
