@@ -1,4 +1,4 @@
-# Project Planning & Management System (PMS)
+# Project Camp : Project Management System
 
 ## 1. Project Overview
 
