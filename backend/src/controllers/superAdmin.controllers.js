@@ -290,6 +290,11 @@ const deleteUser = asyncHandler(async (req, res) => {
         throw new ApiError(404, "User not found");
     }
 
+    // Check if trying to delete self
+    if (userId === req.user._id.toString()) {
+        throw new ApiError(400, "Cannot delete your own account");
+    }
+
     // Check if trying to delete super admin (additional safety)
     if (user.isSuperAdmin) {
         throw new ApiError(400, "Cannot delete super admin user. Remove super admin privileges first.");

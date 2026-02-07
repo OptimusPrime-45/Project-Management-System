@@ -81,17 +81,14 @@ const createNote = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid project ID format");
     }
 
-    // Check access permissions - only project_admin and super_admin can create notes
+    // Check access permissions - all project members can create notes
     if (!isSuperAdmin) {
         const membership = await ProjectMember.findOne({ user: userId, project: projectId });
 
         if (!membership) {
             throw new ApiError(403, "Forbidden: You do not have access to this project");
         }
-
-        if (membership.role !== UserRolesEnum.PROJECT_ADMIN) {
-            throw new ApiError(403, "Forbidden: Only project admins can create notes");
-        }
+        // All project members (both project_admin and member) can create notes
     }
 
     // Verify project exists

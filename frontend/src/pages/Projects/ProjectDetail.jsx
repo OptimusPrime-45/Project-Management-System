@@ -17,12 +17,14 @@ import ProjectMembers from "./ProjectMembers";
 import ProjectSettings from "./ProjectSettings";
 import ProjectTasks from "./ProjectTasks";
 import ProjectNotes from "./ProjectNotes";
+import ProjectDocuments from "./ProjectDocuments";
 import { toggleProjectCompletion } from "../../api/projects";
 
 const tabs = [
   { key: "overview", label: "Overview" },
   { key: "tasks", label: "Tasks" },
   { key: "notes", label: "Notes" },
+  { key: "documents", label: "Documents" },
   { key: "members", label: "Members" },
   { key: "settings", label: "Settings" },
 ];
@@ -214,20 +216,25 @@ const ProjectDetail = () => {
                   ? "Mark Incomplete"
                   : "Mark Complete"}
               </button>
-              <button
-                type="button"
-                onClick={() => setShowForm(true)}
-                className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/40"
-              >
-                <Pencil size={16} /> Edit
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="inline-flex items-center gap-2 rounded-lg border border-error px-4 py-2 text-sm font-semibold text-error hover:bg-error/10"
-              >
-                <Trash2 size={16} /> Delete
-              </button>
+              {/* Only super admins can edit/delete projects */}
+              {isSuperAdmin && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(true)}
+                    className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/40"
+                  >
+                    <Pencil size={16} /> Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    className="inline-flex items-center gap-2 rounded-lg border border-error px-4 py-2 text-sm font-semibold text-error hover:bg-error/10"
+                  >
+                    <Trash2 size={16} /> Delete
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -362,12 +369,20 @@ const ProjectDetail = () => {
             }}
           />
         );
+      case "documents":
+        return (
+          <ProjectDocuments
+            projectId={projectId}
+            canManage={canManage}
+          />
+        );
       case "settings":
         return (
           <ProjectSettings
             project={currentProject}
             onEdit={() => setShowForm(true)}
             onDelete={handleDelete}
+            canEditProject={isSuperAdmin}
           />
         );
       default:
@@ -394,7 +409,13 @@ const ProjectDetail = () => {
   return (
     <section className="space-y-6">
       <nav className="flex flex-wrap gap-2 border-b border-border">
-        {tabs.map((tab) => (
+        {tabs
+          .filter((tab) => {
+            // Hide Settings tab for non-admin users
+            if (tab.key === "settings" && !canManage) return false;
+            return true;
+          })
+          .map((tab) => (
           <button
             key={tab.key}
             type="button"

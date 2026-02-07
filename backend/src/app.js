@@ -26,6 +26,7 @@ import projectRouter from "./routes/project.routes.js";
 import taskRouter from "./routes/task.routes.js";
 import noteRouter from "./routes/note.routes.js";
 import notificationRouter from "./routes/notification.routes.js";
+import documentRouter from "./routes/document.routes.js";
 
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/auth", authRouter);
@@ -34,6 +35,7 @@ app.use("/api/v1/super-admin", superAdminRouter);
 app.use("/api/v1/projects", projectRouter);
 app.use("/api/v1/projects", taskRouter);
 app.use("/api/v1/projects", noteRouter);
+app.use("/api/v1/projects", documentRouter);
 app.use("/api/v1/notifications", notificationRouter);
 
 app.get("/", (req, res) => {

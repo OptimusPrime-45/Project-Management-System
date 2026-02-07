@@ -184,6 +184,18 @@
   --color-destructive-foreground: rgb(15 23 42);
 }
 
+/* Select dropdown styling for dark mode */
+select option {
+  background-color: var(--color-card);
+  color: var(--color-foreground);
+  padding: 8px 12px;
+}
+
+.dark select option {
+  background-color: rgb(30 41 59);
+  color: rgb(248 250 252);
+}
+
 /* ===================================
    CUSTOM SCROLLBAR
    =================================== */

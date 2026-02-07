@@ -45,9 +45,14 @@ const SubTaskList = ({
 						<label className="flex items-center gap-3 flex-1 cursor-pointer">
 							<input
 								type="checkbox"
-								className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+								className="h-4 w-4 rounded border-border text-primary focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
 								checked={Boolean(subtask.isCompleted)}
-								onChange={() => onToggle?.(subtask)}
+								onChange={() => {
+									if (!subtask.isCompleted || canManage) {
+										onToggle?.(subtask);
+									}
+								}}
+								disabled={subtask.isCompleted && !canManage}
 							/>
 							<span className={`text-sm ${subtask.isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}>
 								{subtask.title}

@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Bell,
-  Globe,
   Loader2,
   Monitor,
   Moon,
@@ -21,7 +20,6 @@ import { useUser } from "../../context/UserContext";
 const THEME_STORAGE_KEY = "pf-theme-choice";
 const NOTIFICATION_STORAGE_KEY = "pf-notifications";
 const NOTIFICATION_PREFS_KEY = "pf-notification-prefs";
-const LANGUAGE_STORAGE_KEY = "pf-language";
 
 const Settings = () => {
   const { theme, toggleTheme, setThemeMode } = useTheme();
@@ -29,7 +27,6 @@ const Settings = () => {
 
   const [accountPrefs, setAccountPrefs] = useState({
     notifications: true,
-    language: "en",
   });
   const [notificationPrefs, setNotificationPrefs] = useState({
     taskAssigned: true,
@@ -59,7 +56,6 @@ const Settings = () => {
 
   useEffect(() => {
     const storedNotifications = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
-    const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
     const storedThemeChoice = localStorage.getItem(THEME_STORAGE_KEY);
     const storedNotificationPrefs = localStorage.getItem(
       NOTIFICATION_PREFS_KEY
@@ -69,7 +65,6 @@ const Settings = () => {
       notifications: storedNotifications
         ? storedNotifications === "true"
         : true,
-      language: storedLanguage || "en",
     });
 
     if (storedNotificationPrefs) {
@@ -110,7 +105,6 @@ const Settings = () => {
       NOTIFICATION_STORAGE_KEY,
       String(accountPrefs.notifications)
     );
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, accountPrefs.language);
     localStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(notificationPrefs));
     setTimeout(() => {
       setAccountFeedback({ type: "success", text: "Preferences saved" });
@@ -293,30 +287,6 @@ const Settings = () => {
                   }`}
                 />
               </button>
-            </label>
-
-            <label className="block space-y-2">
-              <span className="text-sm font-medium text-foreground">
-                Language
-              </span>
-              <div className="flex items-center gap-3 rounded-2xl border border-border bg-input p-3">
-                <Globe size={18} className="text-muted-foreground" />
-                <select
-                  value={accountPrefs.language}
-                  onChange={(event) =>
-                    setAccountPrefs((prev) => ({
-                      ...prev,
-                      language: event.target.value,
-                    }))
-                  }
-                  className="flex-1 bg-transparent text-sm text-foreground focus:outline-none"
-                >
-                  <option value="en">English</option>
-                  <option value="es">Spanish</option>
-                  <option value="fr">French</option>
-                  <option value="de">German</option>
-                </select>
-              </div>
             </label>
 
             {accountFeedback && (

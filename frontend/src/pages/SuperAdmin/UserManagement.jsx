@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Crown, Loader2, Search, ShieldAlert, ShieldCheck, UserCog, UserMinus } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useSuperAdmin } from "../../context/SuperAdminContext";
+import { useAuth } from "../../context/AuthContext";
 
 const UserManagement = () => {
 	const {
@@ -17,6 +18,8 @@ const UserManagement = () => {
 		superAdminLoading,
 		superAdminError,
 	} = useSuperAdmin();
+
+	const { user: currentUser } = useAuth();
 
 	const [search, setSearch] = useState("");
 	const [verificationFilter, setVerificationFilter] = useState("all");
@@ -83,7 +86,6 @@ const UserManagement = () => {
 			username: formValues.username.trim(),
 			email: formValues.email.trim().toLowerCase(),
 			isEmailVerified: formValues.isEmailVerified,
-			isSuperAdmin: formValues.isSuperAdmin,
 		};
 
 		const result = await editAdminUser(getUserId(selectedAdminUser), payload);
@@ -98,11 +100,21 @@ const UserManagement = () => {
 
 	const handleDeleteUser = async (user) => {
 		if (!user) return;
+		
+		// Prevent super admin from deleting themselves
+		const currentUserId = currentUser?.id || currentUser?._id;
+		const targetUserId = getUserId(user);
+		
+		if (currentUserId === targetUserId) {
+			toast.error("You cannot delete your own account");
+			return;
+		}
+		
 		const confirmed = window.confirm(
 			`Delete ${user.username}? This will remove the user, their tasks, and related notes.`
 		);
 		if (!confirmed) return;
-		const result = await removeAdminUser(getUserId(user));
+		const result = await removeAdminUser(targetUserId);
 		if (result.success) {
 			toast.success("User deleted");
 		}
@@ -215,13 +227,15 @@ const UserManagement = () => {
 												>
 													Edit
 												</button>
-												<button
-													type="button"
-													className="rounded-lg border border-error px-3 py-1 text-xs text-error"
-													onClick={() => handleDeleteUser(user)}
-												>
-													Delete
-												</button>
+												{(currentUser?.id || currentUser?._id) !== getUserId(user) && (
+													<button
+														type="button"
+														className="rounded-lg border border-error px-3 py-1 text-xs text-error"
+														onClick={() => handleDeleteUser(user)}
+													>
+														Delete
+													</button>
+												)}
 											</div>
 										</td>
 									</tr>
@@ -269,13 +283,15 @@ const UserManagement = () => {
 										>
 											Edit
 										</button>
-										<button
-											type="button"
-											className="flex-1 rounded-lg border border-error px-3 py-2 text-xs text-error"
-											onClick={() => handleDeleteUser(user)}
-										>
-											Delete
-										</button>
+										{(currentUser?.id || currentUser?._id) !== getUserId(user) && (
+											<button
+												type="button"
+												className="flex-1 rounded-lg border border-error px-3 py-2 text-xs text-error"
+												onClick={() => handleDeleteUser(user)}
+											>
+												Delete
+											</button>
+										)}
 									</div>
 								</article>
 							))}
@@ -423,25 +439,6 @@ const UserManagement = () => {
 									/>
 									<span>Force email verification</span>
 								</label>
-								<label className="flex items-center gap-3 text-sm text-foreground">
-									<input
-										type="checkbox"
-										checked={formValues.isSuperAdmin}
-										onChange={(event) =>
-											setFormValues((prev) => ({ ...prev, isSuperAdmin: event.target.checked }))
-										}
-										className="h-4 w-4 rounded border-border accent-amber-500"
-									/>
-									<span className="flex items-center gap-2">
-										<Crown size={14} className="text-amber-500" />
-										Super Admin privileges
-									</span>
-								</label>
-								{formValues.isSuperAdmin && (
-									<p className="text-xs text-amber-600 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
-										⚠️ Super Admins have full access to all users, projects, and system settings.
-									</p>
-								)}
 								{formError && (
 									<p className="rounded-xl border border-error/40 bg-error/10 p-3 text-sm text-error">
 										{formError}
@@ -474,13 +471,16 @@ const UserManagement = () => {
 							>
 								<UserCog size={16} /> Promote / edit
 							</button>
-							<button
-								type="button"
-								className="inline-flex items-center gap-2 rounded-xl border border-error px-4 py-2 text-sm text-error"
-								onClick={() => handleDeleteUser(selectedAdminUser)}
-							>
-								<UserMinus size={16} /> Delete user
-							</button>
+							{/* Hide delete button for own account */}
+							{(currentUser?.id || currentUser?._id) !== getUserId(selectedAdminUser) && (
+								<button
+									type="button"
+									className="inline-flex items-center gap-2 rounded-xl border border-error px-4 py-2 text-sm text-error"
+									onClick={() => handleDeleteUser(selectedAdminUser)}
+								>
+									<UserMinus size={16} /> Delete user
+								</button>
+							)}
 						</div>
 					</div>
 				</div>

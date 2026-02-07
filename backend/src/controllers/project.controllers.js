@@ -298,15 +298,12 @@ const getProjectById = asyncHandler(async (req, res) => {
         const memberCount = await ProjectMember.countDocuments({
             project: project._id,
         });
-        const Task = mongoose.model("Task");
-        const Note = mongoose.model("Note");
-
         const totalTasks = await Task.countDocuments({ project: project._id });
         const inProgress = await Task.countDocuments({
             project: project._id,
             status: { $in: ["in_progress", "in progress", "IN_PROGRESS"] },
         });
-        const totalNotes = await Note.countDocuments({ project: project._id });
+        const totalNotes = await ProjectNote.countDocuments({ project: project._id });
 
         // Get recent tasks and notes for overview
         const recentTasks = await Task.find({ project: project._id })
@@ -318,7 +315,7 @@ const getProjectById = asyncHandler(async (req, res) => {
                 "title status priority dueDate createdAt assignedTo assignedBy",
             );
 
-        const recentNotes = await Note.find({ project: project._id })
+        const recentNotes = await ProjectNote.find({ project: project._id })
             .populate("createdBy", "username email avatar")
             .sort({ createdAt: -1 })
             .limit(5)
@@ -375,15 +372,12 @@ const getProjectById = asyncHandler(async (req, res) => {
     const memberCount = await ProjectMember.countDocuments({
         project: project._id,
     });
-    const Task = mongoose.model("Task");
-    const Note = mongoose.model("Note");
-
     const totalTasks = await Task.countDocuments({ project: project._id });
     const inProgress = await Task.countDocuments({
         project: project._id,
         status: { $in: ["in_progress", "in progress", "IN_PROGRESS"] },
     });
-    const totalNotes = await Note.countDocuments({ project: project._id });
+    const totalNotes = await ProjectNote.countDocuments({ project: project._id });
 
     // Get recent tasks and notes for overview
     const recentTasks = await Task.find({ project: project._id })
@@ -395,7 +389,7 @@ const getProjectById = asyncHandler(async (req, res) => {
             "title status priority dueDate createdAt assignedTo assignedBy",
         );
 
-    const recentNotes = await Note.find({ project: project._id })
+    const recentNotes = await ProjectNote.find({ project: project._id })
         .populate("createdBy", "username email avatar")
         .sort({ createdAt: -1 })
         .limit(5)
@@ -452,26 +446,12 @@ const updateProject = asyncHandler(async (req, res) => {
 
     const { isSuperAdmin, _id: userId } = req.user;
 
-    // Check permissions for non-super admin
+    // Only super admin can update project - project admins cannot edit project details
     if (!isSuperAdmin) {
-        const membership = await ProjectMember.findOne({
-            user: userId,
-            project: projectId,
-        });
-
-        if (!membership) {
-            throw new ApiError(
-                403,
-                "Forbidden: You do not have access to this project",
-            );
-        }
-
-        if (membership.role !== UserRolesEnum.PROJECT_ADMIN) {
-            throw new ApiError(
-                403,
-                "Forbidden: Project admin access required to update project",
-            );
-        }
+        throw new ApiError(
+            403,
+            "Forbidden: Only super admins can update project details",
+        );
     }
 
     // Find the project
@@ -541,25 +521,12 @@ const deleteProject = asyncHandler(async (req, res) => {
 
     const { isSuperAdmin, _id: userId } = req.user;
 
-    // Check permissions for non-super admin
+    // Only super admin can delete project - project admins cannot delete projects
     if (!isSuperAdmin) {
-        const membership = await ProjectMember.findOne({
-            user: userId,
-            project: projectId,
-        });
-
-        if (!membership) {
-            throw new ApiError(
-                403,
-                "Forbidden: You do not have access to this project",
-            );
-        }
-        if (membership.role !== UserRolesEnum.PROJECT_ADMIN) {
-            throw new ApiError(
-                403,
-                "Forbidden: Project admin access required to delete project",
-            );
-        }
+        throw new ApiError(
+            403,
+            "Forbidden: Only super admins can delete projects",
+        );
     }
 
     // Verify project exists

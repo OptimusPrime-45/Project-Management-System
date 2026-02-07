@@ -295,6 +295,11 @@ const updateTask = asyncHandler(async (req, res) => {
             if (title !== undefined || description !== undefined || assignedTo !== undefined) {
                 throw new ApiError(403, "Forbidden: Members can only update task status");
             }
+            
+            // Prevent members from reverting completed tasks
+            if (existingTask.status === TaskStatusEnum.DONE && status && status !== TaskStatusEnum.DONE) {
+                throw new ApiError(403, "Forbidden: Members cannot revert a completed task");
+            }
         } else if (membership.role === UserRolesEnum.PROJECT_ADMIN) {
             // Only validate assignedTo if it's being changed
             if (assignedTo && assignedTo !== existingTask.assignedTo.toString()) {
@@ -514,6 +519,11 @@ const updateSubTask = asyncHandler(async (req, res) => {
     const existingSubTask = await SubTask.findOne({ _id: subTaskId, task: taskId });
     if (!existingSubTask) {
         throw new ApiError(404, "SubTask not found");
+    }
+
+    // Prevent members from reverting completed subtasks
+    if (membership && membership.role === UserRolesEnum.MEMBER && existingSubTask.isCompleted && isCompleted === false) {
+        throw new ApiError(403, "Forbidden: Members cannot revert a completed subtask");
     }
 
     // Update subTask

@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, LayoutGrid, List, Search, Loader2 } from "lucide-react";
 import { useProjects } from "../../context/ProjectContext";
+import { useAuth } from "../../context/AuthContext";
 import ProjectCard from "../../components/Project/ProjectCard";
 import ProjectForm from "../../components/Project/ProjectForm";
 import { EmptyState } from "../../components/Common/EmptyState";
@@ -11,6 +12,7 @@ import Breadcrumb from "../../components/Common/Breadcrumb";
 
 const ProjectsList = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     projects,
     loading,
@@ -20,6 +22,9 @@ const ProjectsList = () => {
     editProject,
     removeProject,
   } = useProjects();
+
+  // Only super admins can create new projects
+  const canCreateProject = user?.isSuperAdmin === true;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [view, setView] = useState("grid");
@@ -108,13 +113,15 @@ const ProjectsList = () => {
           title={searchTerm ? "No projects found" : "No projects yet"}
           description={
             searchTerm
-              ? "Try a different search keyword or create a new project."
-              : "Create your first project to get started with managing your team's work."
+              ? "Try a different search keyword."
+              : canCreateProject 
+                ? "Create your first project to get started with managing your team's work."
+                : "You don't have any projects yet. Ask an admin to add you to a project."
           }
-          actionLabel="Create Project"
-          action={() =>
+          actionLabel={canCreateProject ? "Create Project" : undefined}
+          action={canCreateProject ? () =>
             setModalState({ open: true, mode: "create", project: null })
-          }
+          : undefined}
         />
       );
     }
@@ -127,22 +134,28 @@ const ProjectsList = () => {
             : "space-y-4"
         }
       >
-        {filteredProjects.map((project, idx) => (
-          <div
-            key={project.id || project._id}
-            className="animate-fade-in"
-            style={{ animationDelay: `${idx * 50}ms` }}
-          >
-            <ProjectCard
-              project={project}
-              onView={(proj) => navigate(`/projects/${proj.id || proj._id}`)}
-              onEdit={(proj) =>
-                setModalState({ open: true, mode: "edit", project: proj })
-              }
-              onDelete={handleDelete}
-            />
-          </div>
-        ))}
+        {filteredProjects.map((project, idx) => {
+          // Check if user can manage this specific project
+          const projectRole = (project.role || project.currentUserRole || "").toLowerCase();
+          const canManageProject = user?.isSuperAdmin === true || projectRole === "project_admin";
+          
+          return (
+            <div
+              key={project.id || project._id}
+              className="animate-fade-in"
+              style={{ animationDelay: `${idx * 50}ms` }}
+            >
+              <ProjectCard
+                project={project}
+                onView={(proj) => navigate(`/projects/${proj.id || proj._id}`)}
+                onEdit={canManageProject ? (proj) =>
+                  setModalState({ open: true, mode: "edit", project: proj })
+                : undefined}
+                onDelete={canManageProject ? handleDelete : undefined}
+              />
+            </div>
+          );
+        })}
       </div>
     );
   };
@@ -201,16 +214,18 @@ const ProjectsList = () => {
               >
                 <List size={16} />
               </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setModalState({ open: true, mode: "create", project: null })
-                }
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl gradient-primary text-white px-5 py-2.5 text-sm font-semibold shadow-md hover:shadow-lg transition-all btn-hover"
-              >
-                <Plus size={16} />
-                Create Project
-              </button>
+              {canCreateProject && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setModalState({ open: true, mode: "create", project: null })
+                  }
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-xl gradient-primary text-white px-5 py-2.5 text-sm font-semibold shadow-md hover:shadow-lg transition-all btn-hover"
+                >
+                  <Plus size={16} />
+                  Create Project
+                </button>
+              )}
             </div>
           </div>
         </header>

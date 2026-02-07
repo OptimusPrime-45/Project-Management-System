@@ -309,13 +309,16 @@ const ProjectTasks = ({ projectId, canManage, members = [] }) => {
                     <select
                       value={selectedTask.status || "todo"}
                       onChange={(e) => handleTaskStatusChange(selectedTask, e.target.value)}
-                      disabled={detailLoading}
+                      disabled={detailLoading || (!canManage && (selectedTask.status === "done" || selectedTask.status === "DONE"))}
                       className="mt-1 w-full rounded-lg border border-border bg-input px-3 py-1.5 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
                     >
                       <option value="todo">To Do</option>
                       <option value="in_progress">In Progress</option>
                       <option value="done">Done</option>
                     </select>
+                    {!canManage && (selectedTask.status === "done" || selectedTask.status === "DONE") && (
+                      <p className="mt-1 text-[10px] text-muted-foreground">Completed tasks are locked.</p>
+                    )}
                   </div>
                   <div>
                     <p className="text-xs uppercase text-muted-foreground">Assignee</p>

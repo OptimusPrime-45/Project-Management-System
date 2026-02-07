@@ -4,7 +4,9 @@ import { useNotes } from "../../context/NoteContext";
 import NoteCard from "../../components/Note/NoteCard";
 import NoteForm from "../../components/Note/NoteForm";
 
-const ProjectNotes = ({ projectId, canManage }) => {
+// canManage: can edit/delete notes (admin/project_admin only)
+// canCreate: can create notes (all project members including regular members)
+const ProjectNotes = ({ projectId, canManage, canCreate = true }) => {
   const {
     notes,
     noteLoading,
@@ -106,7 +108,7 @@ const ProjectNotes = ({ projectId, canManage }) => {
         <div className="text-center border border-dashed border-border rounded-2xl p-10">
           <p className="text-lg font-semibold text-foreground">No notes yet</p>
           <p className="text-sm text-muted-foreground mt-1">Capture your first note to document decisions.</p>
-          {canManage && (
+          {canCreate && (
             <button
               type="button"
               onClick={() => setModalState({ open: true, mode: "create", note: null })}
@@ -199,7 +201,7 @@ const ProjectNotes = ({ projectId, canManage }) => {
             >
               <List size={16} />
             </button>
-            {canManage && (
+            {canCreate && (
               <button
                 type="button"
                 onClick={() => setModalState({ open: true, mode: "create", note: null })}
