@@ -14,6 +14,7 @@ import ProjectManagement from "./pages/SuperAdmin/ProjectManagement";
 import SuperAdminRoute from "./components/Guards/SuperAdminRoute";
 import ProtectedRoute from "./components/Guards/ProtectedRoute";
 import PublicRoute from "./components/Guards/PublicRoute";
+import Landing from "./pages/Landing";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import VerifyEmail from "./pages/Auth/VerifyEmail";
@@ -26,6 +27,7 @@ const App = () => {
     <Routes>
       {/* Public Routes - redirect to dashboard if already logged in */}
       <Route element={<PublicRoute />}>
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Route>
@@ -58,8 +60,6 @@ const App = () => {
         </Route>
       </Route>
 
-      {/* Root redirect to login */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
 
       {/* 404 Not Found */}
       <Route path="*" element={<NotFound />} />
